@@ -1,0 +1,43 @@
+{
+  "name": "apex-trade",
+  "version": "1.0.0",
+  "description": "trading jornaling app",
+  "keywords": [
+    "mern",
+    "reactjs",
+    "nodejs",
+    "mysql"
+  ],
+  "homepage": "https://github.com/ceekeey/apextrade#readme",
+  "bugs": {
+    "url": "https://github.com/ceekeey/apextrade/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/ceekeey/apextrade.git"
+  },
+  "license": "ISC",
+  "author": "isah abdulhameed haruna",
+  "type": "module",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "nodemon server/app.js",
+    "start": "node server/app.js"
+  },
+  "dependencies": {
+    "bcrypt": "^6.0.0",
+    "cookie-parser": "^1.4.7",
+    "cors": "^2.8.6",
+    "dotenv": "^18.0.9",
+    "express": "^5.3.0",
+    "express-rate-limit": "^8.7.2",
+    "helmet": "^8.3.0",
+    "jsonwebtoken": "^9.0.3",
+    "multer": "^2.5.0",
+    "mysql2": "^3.24.6",
+    "nodemailer": "^10.3.1",
+    "sequelize": "^6.37.8",
+    "zod": "^4.6.7"
+  }
+}
