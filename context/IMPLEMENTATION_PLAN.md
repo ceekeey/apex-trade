@@ -13,35 +13,35 @@ No milestone is complete without implementation evidence and actual test results
 
 ## Milestone 0 — Repository inspection and package consolidation plan
 
-- [ ] Read all six context documents.
-- [ ] Inspect root and client package manifests/lockfiles.
-- [ ] Confirm Node.js/npm versions and module system.
-- [ ] Inspect existing frontend and backend files.
-- [ ] Inspect `server/app.js` and current scripts.
-- [ ] Inspect Git status and `.gitignore`.
-- [ ] Identify environment variable names without exposing values.
-- [ ] Record baseline frontend lint/build results.
-- [ ] Identify current test runner and baseline tests.
-- [ ] Present a plan to consolidate dependencies/scripts into the root package.
-- [ ] Do not delete `client/package.json` or its lockfile until the root setup is verified.
+- [x] Read all six context documents.
+- [x] Inspect root and client package manifests/lockfiles.
+- [x] Confirm Node.js/npm versions and module system.
+- [x] Inspect existing frontend and backend files.
+- [x] Inspect `server/app.js` and current scripts.
+- [x] Inspect Git status and `.gitignore`.
+- [x] Identify environment variable names without exposing values.
+- [x] Record baseline frontend lint/build results.
+- [x] Identify current test runner and baseline tests.
+- [x] Present a plan to consolidate dependencies/scripts into the root package.
+- [x] Do not delete `client/package.json` or its lockfile until the root setup is verified.
 
 ## Milestone 1 — Root package and backend foundation
 
-- [ ] Consolidate client and server dependencies into root `package.json`.
-- [ ] Define root scripts for client dev/build/lint and server dev/start/test.
-- [ ] Generate one root lockfile.
-- [ ] Verify frontend install, lint and production build.
-- [ ] Retire nested client manifest/lockfile only after successful verification.
-- [ ] Create the modular server source structure incrementally.
-- [ ] Validate environment variables.
-- [ ] Separate Express app creation from server startup.
-- [ ] Configure Express 5, Helmet, explicit CORS and request-size limits.
-- [ ] Configure MySQL/Sequelize connection.
-- [ ] Add readiness/health endpoint.
-- [ ] Add 404 and centralized error handlers.
-- [ ] Add graceful shutdown.
-- [ ] Add focused foundation tests.
-- [ ] Preserve frontend source and behavior.
+- [x] Consolidate client and server dependencies into root `package.json`.
+- [x] Define root scripts for client dev/build/lint and server dev/start/test.
+- [x] Generate one root lockfile.
+- [x] Verify frontend install, lint and production build.
+- [ ] Retire nested client manifest/lockfile only after successful verification. *(Incomplete: nested client package files remain on disk and are still invoked by root scripts)*
+- [x] Create the modular server source structure incrementally.
+- [x] Validate environment variables.
+- [x] Separate Express app creation from server startup.
+- [x] Configure Express 5, Helmet, explicit CORS and request-size limits.
+- [x] Configure MySQL/Sequelize connection. *(Note: Configuration, pool settings, and connection close verified; live database connection skipped because local MySQL service is offline)*
+- [x] Add readiness/health endpoint.
+- [x] Add 404 and centralized error handlers.
+- [x] Add graceful shutdown.
+- [x] Add focused foundation tests.
+- [x] Preserve frontend source and behavior.
 
 ## Milestone 2 — Email infrastructure
 
@@ -156,37 +156,98 @@ Required slot keys and labels:
 
 ## Milestone completion report
 
-### Milestone:
-### Date:
+### Milestone: Milestone 0 (Completed) / Milestone 1 (In Progress Audit)
+### Date: 2026-10-30
 
 **Implemented**
-- 
+- Completed repository-wide inspection of package manifests, lockfiles, Node.js/npm environments, and directory structure.
+- Consolidated client and server dependencies and devDependencies into the single root `package.json`.
+- Defined root scripts for client dev/build/lint/preview and server dev/start/test.
+- Generated single root `package-lock.json` managing both client and server trees.
+- Created modular backend structure under `server/src/`:
+  - `server/src/app.js` (Express 5 app factory without listening; Helmet, explicit CORS origin allowlist, 10kb body parser limits, cookie-parser, health routing, 404 handler, centralized error handler).
+  - `server/src/server.js` (Environment validation, graceful shutdown handling SIGINT/SIGTERM with connection cleanup and timeout protection).
+  - `server/src/config/` (`env.js` with Zod validation protecting secrets, `database.js` with Sequelize connection pooling and disconnect routines, `cors.js` with allowlist enforcement).
+  - `server/src/database/models/index.js` (Central model registry).
+  - `server/src/middlewares/` (`notFoundHandler.js` for 404 responses, `errorHandler.js` for sanitized error formatting and production stack masking).
+  - `server/src/routes/health.routes.js` (`GET /health` process uptime and `GET /ready` database status check without credential leaks).
+  - `server/app.js` (Backwards-compatibility entry point re-exporting `createApp` and `app`).
+- Maintained client stability: `npm run lint:client` and `npm run build:client` verified passing.
+- Implemented 14 automated backend unit, security, and integration tests using Node.js built-in test runner.
 
 **Files created**
-- 
+- `.env.example`
+- `server/src/app.js`
+- `server/src/server.js`
+- `server/src/config/cors.js`
+- `server/src/config/database.js`
+- `server/src/config/env.js`
+- `server/src/database/models/index.js`
+- `server/src/middlewares/errorHandler.js`
+- `server/src/middlewares/notFoundHandler.js`
+- `server/src/routes/health.routes.js`
+- `server/tests/unit/database.test.js`
+- `server/tests/unit/env.test.js`
+- `server/tests/security/cors.test.js`
+- `server/tests/integration/error-handling.test.js`
+- `server/tests/integration/health.test.js`
+- `server/tests/integration/mysql-live.test.js`
 
 **Files modified**
-- 
+- `package.json`
+- `package-lock.json`
+- `server/app.js`
+- `.gitignore`
+- `context/IMPLEMENTATION_PLAN.md`
 
 **Dependencies changed**
-- 
+- Added to root: client dependencies (`@hookform/resolvers`, `axios`, `browser-image-compression`, `date-fns`, `framer-motion`, `lucide-react`, `react`, `react-dom`, `react-dropzone`, `react-hook-form`, `react-hot-toast`, `react-router-dom`, `recharts`, `sweetalert2`, `tailwindcss`, `zod`, `@eslint/js`, `@tailwindcss/vite`, `@types/react`, `@types/react-dom`, `@vitejs/plugin-react`, `eslint`, `eslint-plugin-react-hooks`, `eslint-plugin-react-refresh`, `globals`, `vite`).
 
 **Commands/tests executed**
-- 
+- `node -v` (v26.13.0)
+- `npm -v` (11.20.0)
+- `npm run test:server`
+- `npm run lint:client`
+- `npm run build:client`
+- `git status`
+- `git ls-files -s .env*`
+- `git check-ignore -v .env .env.local .env.example`
 
 **Results**
 - Passed:
-- Failed:
+  - Backend tests (`npm run test:server`): 13 passed (unit: env, database; security: cors; integration: error-handling, health).
+  - Frontend lint (`npm run lint:client`): 0 errors, 0 warnings.
+  - Frontend production build (`npm run build:client`): 16 modules transformed, built in 3.56s.
+- Failed: 0
 - Not run / blocked:
+  - 1 backend test skipped (`server/tests/integration/mysql-live.test.js`) because local MySQL service is offline.
 
 **Known issues and security considerations**
-- 
+- Nested `client/package.json` and `client/package-lock.json` have not yet been retired; root scripts still invoke `npm --prefix client ...`.
+- Historical secret exposure: commit `46dd2ae` contained `.env.local` in Git history. While untracked locally and committed as removed in `fd7eec2`, commit `46dd2ae` remains in reachable remote history. Credentials present in that commit must be rotated, and history should be rewritten/purged if approved.
+- Live MySQL connection is unverified because MySQL service is currently stopped/unavailable.
 
 **Next proposed milestone**
-- 
+- Complete Milestone 1 by verifying live MySQL connectivity and retiring nested client package manifests/lockfiles once scripts are updated.
 
 ## Current progress
 
-- Milestone 0: Not started.
-- Milestone 1: Not started.
-- Milestones 2–9: Not started.
+- **Milestone 0 status:** Completed. Repository inspection, environment inventory, baseline checks, and package consolidation plan fully verified.
+- **Milestone 1 status:** In Progress. Backend foundation, Express 5 modular architecture, Zod env validation, security headers, CORS allowlist, request limits, error handling, health/readiness endpoints, graceful shutdown, and 13 automated tests are verified. Milestone remains open pending live MySQL database verification (local service offline) and safe retirement of nested client package files (`client/package.json`, `client/package-lock.json`).
+- **Milestones 2–9 status:** Not started.
+- **Actual test results:**
+  - `npm run test:server`: 14 tests executed — 13 passed, 0 failed, 1 skipped (`MySQL Live Integration Test`).
+  - `npm run lint:client`: Passed cleanly (0 errors, 0 warnings).
+  - `npm run build:client`: Passed cleanly (Vite production build in 3.56s).
+- **Known issues:**
+  - Local MySQL instance is offline, skipping live database connectivity verification.
+  - Nested client package files (`client/package.json`, `client/package-lock.json`) are preserved but not yet retired; root scripts still reference `npm --prefix client`.
+- **Security remediation status:**
+  - `.env.local` local tracking: Untracked (`git ls-files .env.local` returns empty).
+  - `.gitignore` rules: Correctly ignoring `.env` and `.env.*`; explicitly keeping `!.env.example` trackable.
+  - Remote removal: Committed in `fd7eec2` ("security: stop tracking local environment file") and pushed to `origin/main`.
+  - Historical exposure: Commit `46dd2ae` retains `.env.local` in reachable Git history.
+  - Credential status: Any secrets contained in commit `46dd2ae` must be considered exposed and rotated immediately.
+  - History purge: Requires git history rewriting (e.g. `git filter-repo`) and coordinated force-push once approved.
+- **Next proposed action:**
+  - Start the local MySQL database service to verify live connectivity via `server/tests/integration/mysql-live.test.js` and validate `/ready` against an active database.
