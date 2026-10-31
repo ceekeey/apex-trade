@@ -45,11 +45,11 @@ No milestone is complete without implementation evidence and actual test results
 
 ## Milestone 2 — Email infrastructure
 
-- [ ] Configure SMTP through validated environment variables.
-- [ ] Implement reusable Nodemailer service.
-- [ ] Add verification, password-reset and welcome templates as required.
-- [ ] Handle delivery errors safely.
-- [ ] Test transporter/configuration without exposing credentials.
+- [x] Configure SMTP through validated environment variables.
+- [x] Implement reusable Nodemailer service.
+- [x] Add verification, password-reset and welcome templates as required.
+- [x] Handle delivery errors safely.
+- [x] Test transporter/configuration without exposing credentials.
 
 ## Milestone 3 — Authentication and account security
 
@@ -233,14 +233,13 @@ Required slot keys and labels:
 ## Current progress
 
 - **Milestone 0 status:** Completed. Repository inspection, environment inventory, baseline checks, and package consolidation plan fully verified.
-- **Milestone 1 status:** In Progress. Backend foundation, Express 5 modular architecture, Zod env validation, security headers, CORS allowlist, request limits, error handling, health/readiness endpoints, graceful shutdown, and 13 automated tests are verified. Milestone remains open pending live MySQL database verification (local service offline) and safe retirement of nested client package files (`client/package.json`, `client/package-lock.json`).
-- **Milestones 2–9 status:** Not started.
-- **Actual test results:**
-  - `npm run test:server`: 14 tests executed — 13 passed, 0 failed, 1 skipped (`MySQL Live Integration Test`).
-  - `npm run lint:client`: Passed cleanly (0 errors, 0 warnings).
-  - `npm run build:client`: Passed cleanly (Vite production build in 3.56s).
+- **Milestone 1 status:** In Progress. Backend foundation, Express 5 modular architecture, Zod env validation, security headers, CORS allowlist, request limits, error handling, health/readiness endpoints, graceful shutdown, and 13 automated tests are verified. Milestone remains open pending live MySQL database verification (the configured `apex_trade` database is currently missing) and safe retirement of nested client package files (`client/package.json`, `client/package-lock.json`).
+- **Milestone 2 status:** In Progress. The SMTP validation, reusable Nodemailer service, three HTML/plain-text templates, safe errors and mocked tests are implemented. The expected local mailbox configuration is not active: `.env.local` is currently absent, and the non-secret `SMTP_HOST`/`SMTP_FROM` settings in `.env` do not match the supplied mailbox values. Local environment files were not changed.
+- **Milestones 3–9 status:** Not started.
+- **Milestone 1 test results:** `npm run test:server` previously executed 14 tests — 13 passed, 0 failed, 1 skipped (`MySQL Live Integration Test`).
+- **Milestone 2 test results:** `npm run test:server` executed 32 tests — 31 passed, 0 failed, 1 skipped (`MySQL Live Integration Test`). `npm run lint:client` and `npm run build:client` passed.
 - **Known issues:**
-  - Local MySQL instance is offline, skipping live database connectivity verification.
+  - The MySQL server responds, but the live integration test skips because the configured database `apex_trade` does not exist.
   - Nested client package files (`client/package.json`, `client/package-lock.json`) are preserved but not yet retired; root scripts still reference `npm --prefix client`.
 - **Security remediation status:**
   - `.env.local` local tracking: Untracked (`git ls-files .env.local` returns empty).
@@ -250,4 +249,49 @@ Required slot keys and labels:
   - Credential status: Any secrets contained in commit `46dd2ae` must be considered exposed and rotated immediately.
   - History purge: Requires git history rewriting (e.g. `git filter-repo`) and coordinated force-push once approved.
 - **Next proposed action:**
-  - Start the local MySQL database service to verify live connectivity via `server/tests/integration/mysql-live.test.js` and validate `/ready` against an active database.
+  - Provision the configured MySQL database, rerun `server/tests/integration/mysql-live.test.js` and validate `/ready`; retire nested client package files only after the package migration is approved and verified.
+
+## Milestone 2 implementation report — Email infrastructure
+
+**Date:** 2026-10-31
+
+**Status:** Implementation and automated testing are complete; the milestone remains open until the expected local mailbox configuration is restored and the user approves any real SMTP verification.
+
+**Implemented**
+- Validated SMTP host, integer port, secure boolean, credentials and sender format when SMTP is configured. Port 465 requires implicit TLS (`SMTP_SECURE=true`); password whitespace is preserved.
+- Added one lazily initialized reusable Nodemailer transporter, transporter verification and validated email sending with the configured sender as default.
+- Added verification, password-reset and welcome email templates in HTML and plain text. Dynamic HTML values are escaped, and action URLs are restricted to HTTP(S).
+- Added safe configuration, connection, authentication and delivery errors with limited diagnostics; message bodies, credentials and token values are not logged or returned.
+- Updated `.env.example` with the supplied non-secret mailbox settings and a password placeholder.
+
+**Evidence**
+- `npm run test:server`: 32 tests — 31 passed, 0 failed, 1 skipped because the configured MySQL database `apex_trade` does not exist. Email transport and delivery tests use mocks only.
+- `npm run lint:client`: passed.
+- `npm run build:client`: passed.
+- Nodemailer was already in the root dependencies; no dependency or lockfile change was required.
+
+**SMTP test status**
+- Configuration validation: tested.
+- Transporter creation and reuse: tested with a mock transport.
+- Mocked sending and failure handling: tested.
+- Real SMTP connection: not attempted.
+- Actual email delivery: not attempted; no email was sent.
+- Runtime configuration: `.env.local` is currently absent. The `SMTP_HOST` and `SMTP_FROM` values in `.env` do not match the supplied configuration. Actual values were not displayed or changed.
+
+**Optional manual SMTP verification (requires explicit user approval)**
+
+After correcting the active runtime SMTP configuration and receiving user approval, an operator can verify the SMTP connection without sending a message. The current loader gives `.env` precedence over `.env.local`, so settings in `.env.local` will not override values already loaded from `.env`.
+
+```powershell
+node --input-type=module -e "import { verifyEmailTransporter } from './server/src/services/email.service.js'; await verifyEmailTransporter(); console.log('SMTP verification succeeded');"
+```
+
+This performs a real SMTP connection/authentication check. It is separate from the automated mocked tests and does not send an email.
+
+**Incomplete requirements**
+- The expected local SMTP configuration is not active; `.env.local` is absent and `.env` has mismatched non-secret host/sender settings.
+- No real SMTP verification or delivery was performed; verification requires explicit approval for live mailbox/network access.
+- The MySQL live test was skipped because the database is missing; the server responded with `Unknown database 'apex_trade'`.
+- Milestone 1 remains in progress for its separately documented database and package-file follow-ups.
+
+**Next proposed milestone:** Milestone 3 — Authentication and Account Security. Wait for user review and approval before proceeding.
